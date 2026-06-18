@@ -213,6 +213,30 @@ td.num{font-family:'JetBrains Mono',monospace;color:var(--t2)}
 .pd-adv-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--t1)}
 .pd-log{padding:14px 22px 20px}
 .pd-log-table{width:100%;border-collapse:collapse}
+
+/* CAREER */
+.pd-career{padding:14px 22px;border-bottom:1px solid var(--border)}
+.career-list{display:flex;flex-direction:column;gap:0}
+.career-item{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);position:relative}
+.career-item:last-child{border-bottom:none}
+.career-dot{width:8px;height:8px;border-radius:50%;background:var(--t3);flex-shrink:0;margin-top:4px}
+.career-item.current .career-dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.career-item.loan-item .career-dot{background:var(--loan)}
+.career-info{flex:1}
+.career-club{font-size:13px;font-weight:600;color:var(--t1)}
+.career-item.loan-item .career-club{color:var(--loan)}
+.career-item.current .career-club{color:var(--accent)}
+.career-period{font-size:11px;color:var(--t3);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.loan-tag{font-size:9px;font-weight:700;color:var(--loan);background:rgba(210,153,34,.12);padding:1px 5px;border-radius:4px;margin-left:6px;vertical-align:middle}
+/* City Record table */
+.pd-city{padding:14px 22px;border-bottom:1px solid var(--border)}
+.city-table{width:100%;border-collapse:collapse}
+.city-table th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;padding:5px 8px;text-align:center;border-bottom:1px solid var(--border)}
+.city-table th:first-child{text-align:left}
+.city-table td{padding:8px 8px;text-align:center;font-size:12px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace;color:var(--t2)}
+.city-table td:first-child{text-align:left;font-family:'Inter',sans-serif;font-weight:600;color:var(--t1)}
+.city-table tr:last-child td{border-bottom:none;background:rgba(108,171,221,.06)}
+.city-table tr:hover td{background:var(--hover)}
 .pd-log-table th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;padding:6px 8px;text-align:center;border-bottom:1px solid var(--border)}
 .pd-log-table th:first-child,.pd-log-table td:first-child{text-align:left}
 .pd-log-table td{padding:7px 8px;text-align:center;font-size:12px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
@@ -618,14 +642,75 @@ function openPlayerDetail(id) {
   const p=FM.players.find(x=>x.id===id);
   if(!p) return;
   const s=p.seasonStats;
+  const isKorean = p.id === 'p_cho';
+  const mainName = isKorean ? p.name : p.nameEn;
+  const subName  = isKorean ? p.nameEn : p.name;
+
+  // 75/76 시즌 현재 스탯
+  const currentSeason = `
+    <div class="pd-attrs">
+      <div class="pd-attr"><div class="pd-attr-v">${s.apps}</div><div class="pd-attr-l">출전</div></div>
+      <div class="pd-attr"><div class="pd-attr-v">${s.goals}</div><div class="pd-attr-l">골</div></div>
+      <div class="pd-attr"><div class="pd-attr-v">${s.assists}</div><div class="pd-attr-l">어시스트</div></div>
+      <div class="pd-attr"><div class="pd-attr-v ${ratingColor(s.rating)}">${s.rating||'-'}</div><div class="pd-attr-l">75/76 평점</div></div>
+    </div>`;
+
+  // 커리어
+  const careerHtml = p.career ? `
+    <div class="pd-career">
+      <div class="pd-sec-title">커리어</div>
+      <div class="career-list">
+        ${p.career.map(c=>{
+          const isCurrent = !c.to;
+          const isLoan    = !!c.loan;
+          const period    = c.from + ' ~ ' + (c.to || '현재');
+          return `<div class="career-item${isCurrent?' current':''}${isLoan?' loan-item':''}">
+            <div class="career-dot"></div>
+            <div class="career-info">
+              <div class="career-club">${c.club}${isLoan?`<span class="loan-tag">임대</span>`:''}</div>
+              <div class="career-period">${period}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+  // 맨시티 시즌별 기록
+  const cityHtml = p.cityRecord && p.cityRecord.length ? `
+    <div class="pd-city">
+      <div class="pd-sec-title">맨체스터 시티 기록</div>
+      <table class="city-table">
+        <thead><tr>
+          <th>시즌</th><th>출전</th><th>골</th><th>어시</th><th>평점</th>
+        </tr></thead>
+        <tbody>
+          ${p.cityRecord.map(r=>`
+            <tr>
+              <td>${r.season}</td>
+              <td>${r.apps}</td>
+              <td>${r.goals}</td>
+              <td>${r.assists}</td>
+              <td class="${ratingColor(r.rating)}">${r.rating}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : '';
+
+  // 경기별 기록 (있을 때만)
   const logRows=(p.matchLog||[]).map(l=>{
     const res=l.result.split(' ')[0];
     const cls=res==='W'?'res-w':res==='D'?'res-d':'res-l';
     return `<tr><td>${fmtDate(l.date)}</td><td>${l.opponent}</td><td class="${cls}">${l.result}</td><td>${l.mins}'</td><td>${dash(l.goals)}</td><td>${dash(l.assists)}</td><td class="${ratingColor(l.rating)}">${dash(l.rating)}</td></tr>`;
   }).join('');
-  const isKorean = p.id === 'p_cho';
-  const mainName = isKorean ? p.name : p.nameEn;
-  const subName  = isKorean ? p.nameEn : p.name;
+  const logHtml = logRows ? `
+    <div class="pd-log">
+      <div class="pd-sec-title">경기별 기록</div>
+      <table class="pd-log-table">
+        <thead><tr><th>날짜</th><th>상대</th><th>결과</th><th>출전</th><th>골</th><th>어시</th><th>평점</th></tr></thead>
+        <tbody>${logRows}</tbody>
+      </table>
+    </div>` : '';
+
   document.getElementById('pdContent').innerHTML = `
     <div class="pd-hero">
       <div class="pd-avatar">👤</div>
@@ -640,19 +725,11 @@ function openPlayerDetail(id) {
       </div>
       <button class="pd-close" onclick="closePD()">✕</button>
     </div>
-    <div class="pd-attrs">
-      <div class="pd-attr"><div class="pd-attr-v">${s.apps!==null?s.apps:'-'}</div><div class="pd-attr-l">출전</div></div>
-      <div class="pd-attr"><div class="pd-attr-v">${s.goals!==null?s.goals:'-'}</div><div class="pd-attr-l">골</div></div>
-      <div class="pd-attr"><div class="pd-attr-v">${s.assists!==null?s.assists:'-'}</div><div class="pd-attr-l">어시스트</div></div>
-      <div class="pd-attr"><div class="pd-attr-v ${ratingColor(s.rating)}">${s.rating||'-'}</div><div class="pd-attr-l">평균 평점</div></div>
-    </div>
-    ${logRows?`<div class="pd-log">
-      <div class="pd-sec-title">경기별 기록</div>
-      <table class="pd-log-table">
-        <thead><tr><th>날짜</th><th>상대</th><th>결과</th><th>출전</th><th>골</th><th>어시</th><th>평점</th></tr></thead>
-        <tbody>${logRows}</tbody>
-      </table>
-    </div>`:'<div style="padding:20px 22px;color:var(--t3);font-size:12px;text-align:center">경기 기록이 없습니다.</div>'}`;
+    ${currentSeason}
+    ${careerHtml}
+    ${cityHtml}
+    ${logHtml}`;
+
   document.getElementById('pdOverlay').classList.add('open');
   document.body.style.overflow='hidden';
 }
