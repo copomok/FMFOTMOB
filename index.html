@@ -281,13 +281,15 @@ td.res-w{color:var(--win);font-weight:700}td.res-d{color:var(--draw);font-weight
   <nav class="topnav">
     <button class="tab-btn active" data-tab="standings">순위표</button>
     <button class="tab-btn" data-tab="matches">경기</button>
-    <button class="tab-btn" data-tab="squad">스쿼드</button>
+    <button class="tab-btn" data-tab="squad">1군 스쿼드</button>
+    <button class="tab-btn" data-tab="reserve">2군 스쿼드</button>
   </nav>
   <div class="content">
     <div id="pgHead" class="pg-head"></div>
     <div id="tab-standings" class="tab-pane ani"></div>
     <div id="tab-matches"   class="tab-pane ani" style="display:none"></div>
     <div id="tab-squad"     class="tab-pane ani" style="display:none"></div>
+    <div id="tab-reserve"   class="tab-pane ani" style="display:none"></div>
   </div>
 </div>
 
@@ -319,6 +321,7 @@ function init() {
   renderStandings();
   renderMatches();
   renderSquad();
+  renderReserve();
   bindTabs();
 }
 
@@ -533,12 +536,12 @@ const posGroupOf = p => {
 };
 
 function renderSquad() {
-  const squad  = FM.players.filter(p=>!p.loan);
+  const first  = FM.players.filter(p=>!p.loan && p.squad==='first');
   const onLoan = FM.players.filter(p=>p.loan);
 
   const filtered = squadPosFilter === 'all'
-    ? squad
-    : squad.filter(p => posGroupOf(p) === squadPosFilter);
+    ? first
+    : first.filter(p => posGroupOf(p) === squadPosFilter);
 
   const sorted = sortSquad([...filtered], squadSort);
 
@@ -571,18 +574,32 @@ function renderSquad() {
     <div>
       <div class="squad-section-hd">
         <span class="squad-sec-title" style="color:var(--accent)">1군 스쿼드</span>
-        <span class="squad-sec-count">${sorted.length}${squadPosFilter!=='all'?` / ${squad.length}`:''}명</span>
+        <span class="squad-sec-count">${sorted.length}${squadPosFilter!=='all'?` / ${first.length}`:''}명</span>
       </div>
       <div class="squad-grid">${sorted.length ? sorted.map(renderPlayerCard).join('') : '<p style="color:var(--t3);padding:20px 0">해당하는 선수가 없습니다.</p>'}</div>
     </div>
-    ${onLoan.length && squadPosFilter==='all' ?`
+    ${onLoan.length && squadPosFilter==='all' ? `
     <div>
       <div class="squad-section-hd" style="margin-top:28px">
         <span class="squad-sec-title" style="color:var(--loan)">임대 중</span>
         <span class="squad-sec-count">${onLoan.length}명</span>
       </div>
       <div class="squad-grid">${onLoan.map(renderPlayerCard).join('')}</div>
-    </div>`:''}`;
+    </div>` : ''}`;
+}
+
+function renderReserve() {
+  const reserve = FM.players.filter(p=>!p.loan && p.squad==='reserve');
+  const sorted  = sortSquad([...reserve], 'pos');
+
+  document.getElementById('tab-reserve').innerHTML = `
+    <div>
+      <div class="squad-section-hd">
+        <span class="squad-sec-title" style="color:var(--t2)">2군 스쿼드</span>
+        <span class="squad-sec-count">${reserve.length}명</span>
+      </div>
+      <div class="squad-grid">${sorted.map(renderPlayerCard).join('')}</div>
+    </div>`;
 }
 
 function sortSquad(arr, key) {
