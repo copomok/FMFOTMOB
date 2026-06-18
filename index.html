@@ -150,6 +150,16 @@ td.num{font-family:'JetBrains Mono',monospace;color:var(--t2)}
 .motm-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(210,153,34,.15);border:1px solid rgba(210,153,34,.3);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--draw);margin-bottom:12px}
 .rc9{color:#6CABDD}.rc8{color:#3FB950}.rc7{color:var(--t1)}.rc6{color:var(--t2)}.rc5{color:var(--loss)}
 
+/* SQUAD FILTER */
+.sq-filter-wrap{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.sq-filter-group{display:flex;align-items:center;gap:10px}
+.sq-filter-lbl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;min-width:36px;flex-shrink:0}
+.sq-filter-bar{display:flex;gap:5px;flex-wrap:wrap}
+.sq-filter{padding:5px 12px;background:var(--hover);border:1px solid var(--border);border-radius:20px;color:var(--t2);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.sq-filter:hover{background:var(--border2);color:var(--t1)}
+.sq-filter.active{background:var(--accent-dim);border-color:var(--accent-glow);color:var(--accent)}
+.sq-pos.active{background:rgba(108,171,221,.15);border-color:rgba(108,171,221,.4);color:var(--accent)}
+
 /* SQUAD */
 .squad-section-hd{display:flex;align-items:center;gap:8px;margin-bottom:12px;margin-top:20px}
 .squad-section-hd:first-child{margin-top:0}
@@ -162,8 +172,8 @@ td.num{font-family:'JetBrains Mono',monospace;color:var(--t2)}
 .p-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
 .p-avatar{width:38px;height:38px;border-radius:50%;background:var(--hover);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .p-no{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);font-weight:700;margin-top:1px}
-.p-name{font-size:13px;font-weight:700;line-height:1.3}
-.p-name-en{font-size:10px;color:var(--t3);margin-top:1px}
+.p-name{font-size:14px;font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-name-sub{font-size:10px;color:var(--t3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p-meta{font-size:11px;color:var(--t2);margin-top:2px}
 .p-pos-badge{display:inline-block;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;background:var(--accent-dim);color:var(--accent);margin-right:4px}
 .loan-badge{display:inline-block;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(210,153,34,.15);color:var(--loan)}
@@ -304,15 +314,15 @@ function renderPageHeader() {
     <div class="pg-flag">${FM.leagueFlag}</div>
     <div>
       <div class="pg-name">${FM.leagueName}</div>
-      <div class="pg-meta">시즌 ${FM.season} · ${FM.myTeam} 1위</div>
+      <div class="pg-meta">2074/75 시즌 최종 순위 · ${FM.myTeam} 우승 🏆</div>
     </div>`;
 }
 
 // ── STANDINGS ────────────────────────────────
 function posRowClass(pos,total){
-  if(pos<=4) return 'row-ucl';
-  if(pos===5) return 'row-eur';
-  if(pos===6) return 'row-conf';
+  if(pos<=2) return 'row-ucl';
+  if(pos===3) return 'row-eur';
+  if(pos===4) return 'row-conf';
   if(pos>=total-2) return 'row-rel';
   return '';
 }
@@ -340,7 +350,7 @@ function renderStandings() {
           ${rows.map(r=>{
             const pc=posRowClass(r.pos,total), my=isMyTeam(r.team), gd=r.gf-r.ga;
             return `<tr class="${pc}${my?' my-row':''}">
-              <td><div class="pos-cell"><div class="pos-bar"></div>${r.pos}${chgArrow(r.pos,r.prev)}</div></td>
+              <td><div class="pos-cell"><div class="pos-bar"></div>${r.pos}</div></td>
               <td><div class="team-cell">
                 <div class="t-badge${my?' my-badge':''}">${ini(r.team)}</div>
                 <span class="t-name${my?' my-name':''}">${r.team}</span>
@@ -360,10 +370,10 @@ function renderStandings() {
       </table>
     </div>
     <div class="legend">
-      <div class="leg-i"><div class="leg-d" style="background:var(--ucl)"></div>UCL</div>
-      <div class="leg-i"><div class="leg-d" style="background:var(--eur)"></div>유로파</div>
-      <div class="leg-i"><div class="leg-d" style="background:var(--conf)"></div>컨퍼런스</div>
-      <div class="leg-i"><div class="leg-d" style="background:var(--rel)"></div>강등권</div>
+      <div class="leg-i"><div class="leg-d" style="background:var(--ucl)"></div>UCL (1~2위)</div>
+      <div class="leg-i"><div class="leg-d" style="background:var(--eur)"></div>UEL (3위)</div>
+      <div class="leg-i"><div class="leg-d" style="background:var(--conf)"></div>UECL (4위)</div>
+      <div class="leg-i"><div class="leg-d" style="background:var(--rel)"></div>강등 (18~20위)</div>
     </div>`;
 }
 
@@ -482,26 +492,66 @@ function closeMC(e){
 }
 
 // ── SQUAD ─────────────────────────────────────
+const posOrder = ['GK','D','DM','M','AM','WB','ST'];
+const posRank  = p => { const f=posOrder.findIndex(o=>p.pos.startsWith(o)); return f===-1?99:f; };
+
+let squadSort   = 'pos';  // 'pos' | 'no' | 'rating' | 'goals'
+let squadPosFilter = 'all'; // 'all' | 'GK' | 'DF' | 'MF' | 'FW'
+
+const posGroupOf = p => {
+  const pos = p.pos;
+  if (pos.startsWith('GK')) return 'GK';
+  if (pos.startsWith('D'))  return 'DF';
+  if (pos.startsWith('WB')) return 'DF';
+  if (pos.startsWith('DM') || pos.startsWith('M')) return 'MF';
+  if (pos.startsWith('AM') || pos.startsWith('ST')) return 'FW';
+  return 'MF';
+};
+
 function renderSquad() {
   const squad  = FM.players.filter(p=>!p.loan);
   const onLoan = FM.players.filter(p=>p.loan);
 
-  const posOrder = ['GK','D','DM','M','AM','WB','ST'];
-  const posRank  = p => {
-    const f = posOrder.findIndex(o => p.pos.startsWith(o));
-    return f===-1 ? 99 : f;
-  };
-  squad.sort((a,b)=>posRank(a)-posRank(b)||(a.no||999)-(b.no||999));
+  const filtered = squadPosFilter === 'all'
+    ? squad
+    : squad.filter(p => posGroupOf(p) === squadPosFilter);
+
+  const sorted = sortSquad([...filtered], squadSort);
+
+  const sortBtns = [
+    { key:'pos',    label:'포지션' },
+    { key:'no',     label:'등번호' },
+    { key:'rating', label:'평점'   },
+    { key:'goals',  label:'득점'   },
+  ].map(f=>`<button class="sq-filter${squadSort===f.key?' active':''}" onclick="setSquadSort('${f.key}')">${f.label}</button>`).join('');
+
+  const posBtns = [
+    { key:'all', label:'전체' },
+    { key:'GK',  label:'GK'  },
+    { key:'DF',  label:'DF'  },
+    { key:'MF',  label:'MF'  },
+    { key:'FW',  label:'FW'  },
+  ].map(f=>`<button class="sq-filter sq-pos${squadPosFilter===f.key?' active':''}" onclick="setSquadPosFilter('${f.key}')">${f.label}</button>`).join('');
 
   document.getElementById('tab-squad').innerHTML = `
+    <div class="sq-filter-wrap">
+      <div class="sq-filter-group">
+        <span class="sq-filter-lbl">포지션</span>
+        <div class="sq-filter-bar">${posBtns}</div>
+      </div>
+      <div class="sq-filter-group">
+        <span class="sq-filter-lbl">정렬</span>
+        <div class="sq-filter-bar">${sortBtns}</div>
+      </div>
+    </div>
     <div>
       <div class="squad-section-hd">
         <span class="squad-sec-title" style="color:var(--accent)">1군 스쿼드</span>
-        <span class="squad-sec-count">${squad.length}명</span>
+        <span class="squad-sec-count">${sorted.length}${squadPosFilter!=='all'?` / ${squad.length}`:''}명</span>
       </div>
-      <div class="squad-grid">${squad.map(renderPlayerCard).join('')}</div>
+      <div class="squad-grid">${sorted.length ? sorted.map(renderPlayerCard).join('') : '<p style="color:var(--t3);padding:20px 0">해당하는 선수가 없습니다.</p>'}</div>
     </div>
-    ${onLoan.length?`
+    ${onLoan.length && squadPosFilter==='all' ?`
     <div>
       <div class="squad-section-hd" style="margin-top:28px">
         <span class="squad-sec-title" style="color:var(--loan)">임대 중</span>
@@ -511,12 +561,32 @@ function renderSquad() {
     </div>`:''}`;
 }
 
+function sortSquad(arr, key) {
+  if (key==='pos')    return arr.sort((a,b)=>posRank(a)-posRank(b)||(a.no||999)-(b.no||999));
+  if (key==='no')     return arr.sort((a,b)=>(a.no||999)-(b.no||999));
+  if (key==='rating') return arr.sort((a,b)=>(b.seasonStats.rating||0)-(a.seasonStats.rating||0));
+  if (key==='goals')  return arr.sort((a,b)=>(b.seasonStats.goals||0)-(a.seasonStats.goals||0));
+  return arr;
+}
+
+function setSquadSort(key) {
+  squadSort = key;
+  renderSquad();
+}
+
+function setSquadPosFilter(key) {
+  squadPosFilter = key;
+  renderSquad();
+}
+
 function renderPlayerCard(p) {
   const s=p.seasonStats;
   const rc=ratingColor(s.rating);
+  const isKorean = p.id === 'p_cho'; // 조성현만 한국어 우선
+  const mainName  = isKorean ? p.name   : p.nameEn;
+  const subName   = isKorean ? p.nameEn : p.name;
   const noBadge=p.no?`<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);font-weight:700">#${p.no}</span>`:'';
   const loanBadge=p.loan?`<span class="loan-badge">임대</span>`:'';
-  const injBadge=p.injured?`<span class="injured-badge">부상</span>`:'';
   return `<div class="p-card${p.loan?' loan-card':''}" onclick="openPlayerDetail('${p.id}')">
     <div class="p-head">
       <div>
@@ -524,11 +594,11 @@ function renderPlayerCard(p) {
         ${noBadge}
       </div>
       <div style="flex:1;min-width:0">
-        <div class="p-name">${p.name}</div>
-        <div class="p-name-en">${p.nameEn}</div>
+        <div class="p-name">${mainName}</div>
+        <div class="p-name-sub">${subName}</div>
         <div class="p-meta">
           <span class="p-pos-badge">${p.pos.split(',')[0].trim()}</span>
-          ${loanBadge}${injBadge}
+          ${loanBadge}
           ${p.nationality} · ${p.age?p.age+'세':''}
         </div>
         ${s.rating?`<div class="p-rating">⭐ ${s.rating}</div>`:''}
@@ -553,17 +623,19 @@ function openPlayerDetail(id) {
     const cls=res==='W'?'res-w':res==='D'?'res-d':'res-l';
     return `<tr><td>${fmtDate(l.date)}</td><td>${l.opponent}</td><td class="${cls}">${l.result}</td><td>${l.mins}'</td><td>${dash(l.goals)}</td><td>${dash(l.assists)}</td><td class="${ratingColor(l.rating)}">${dash(l.rating)}</td></tr>`;
   }).join('');
+  const isKorean = p.id === 'p_cho';
+  const mainName = isKorean ? p.name : p.nameEn;
+  const subName  = isKorean ? p.nameEn : p.name;
   document.getElementById('pdContent').innerHTML = `
     <div class="pd-hero">
       <div class="pd-avatar">👤</div>
       <div>
-        <div class="pd-name">${p.name}${p.no?` <span style="font-size:13px;color:var(--accent);font-family:'JetBrains Mono',monospace">#${p.no}</span>`:''}</div>
-        <div class="pd-name-en">${p.nameEn}</div>
+        <div class="pd-name">${mainName}${p.no?` <span style="font-size:13px;color:var(--accent);font-family:'JetBrains Mono',monospace">#${p.no}</span>`:''}</div>
+        <div class="pd-name-en" style="font-size:11px;color:var(--t3);margin-top:2px">${subName}</div>
         <div class="pd-sub">
           <span class="pd-pos-pill">${p.pos.split(',')[0].trim()}</span>
           ${p.nationality} · ${p.age?p.age+'세':''}
           ${p.loan?`<span class="loan-badge">임대 중</span>`:''}
-          ${p.injured?`<span class="injured-badge">부상</span>`:''}
         </div>
       </div>
       <button class="pd-close" onclick="closePD()">✕</button>
