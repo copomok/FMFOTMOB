@@ -150,6 +150,11 @@ td.num{font-family:'JetBrains Mono',monospace;color:var(--t2)}
 .motm-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(210,153,34,.15);border:1px solid rgba(210,153,34,.3);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--draw);margin-bottom:12px}
 .rc9{color:#6CABDD}.rc8{color:#3FB950}.rc7{color:var(--t1)}.rc6{color:var(--t2)}.rc5{color:var(--loss)}
 
+/* EMBLEM */
+.emb{object-fit:contain;border-radius:3px;flex-shrink:0;display:block}
+.emb-fallback{display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:var(--hover);border:1px solid var(--border);color:var(--t3);font-weight:700;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.emb-lg{width:48px;height:48px;object-fit:contain}
+
 /* SQUAD FILTER */
 .sq-filter-wrap{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
 .sq-filter-group{display:flex;align-items:center;gap:10px}
@@ -217,9 +222,10 @@ td.num{font-family:'JetBrains Mono',monospace;color:var(--t2)}
 /* CAREER */
 .pd-career{padding:14px 22px;border-bottom:1px solid var(--border)}
 .career-list{display:flex;flex-direction:column;gap:0}
-.career-item{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);position:relative}
+.career-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
 .career-item:last-child{border-bottom:none}
-.career-dot{width:8px;height:8px;border-radius:50%;background:var(--t3);flex-shrink:0;margin-top:4px}
+.career-emb{border-radius:4px;flex-shrink:0}
+.career-dot{width:6px;height:6px;border-radius:50%;background:var(--t3);flex-shrink:0}
 .career-item.current .career-dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
 .career-item.loan-item .career-dot{background:var(--loan)}
 .career-info{flex:1}
@@ -309,6 +315,60 @@ td.res-w{color:var(--win);font-weight:700}td.res-d{color:var(--draw);font-weight
 
 <script src="fm_data.js"></script>
 <script>
+// ── 엠블럼 매핑 ──────────────────────────────
+// 실제 이미지가 있는 팀
+const EMBLEM = {
+  // 리그
+  "epl":              "img/league_epl.png",
+  // 현재 리그 팀들
+  "입스위치 타운":    "img/club_ipswich.png",
+  "아스날":           "img/club_arsenal.png",
+  "본머스":           "img/club_bournemouth.png",
+  "뉴캐슬":           "img/club_newcastle.png",
+  "노팅엄 포레스트":  "img/club_nottm_forest.png",
+  "토트넘":           "img/club_tottenham.png",
+  // 커리어 클럽
+  "코번트리 시티":    "img/club_coventry.png",
+  // SVG 플레이스홀더
+  "맨체스터 시티":    "img/club_mancity.svg",
+  "리버풀":           "img/club_liverpool.svg",
+  "첼시":             "img/club_chelsea.svg",
+  "풀햄":             "img/club_fulham.svg",
+  "애스턴 빌라":      "img/club_aston_villa.svg",
+  "아스톤 빌라":      "img/club_aston_villa.svg",
+  "팰리스":           "img/club_palace.svg",
+  "크리스탈 팰리스":  "img/club_crystal_palace.svg",
+  "울버햄튼":         "img/club_wolves.svg",
+  "에버턴":           "img/club_everton.svg",
+  "브렌트포드":       "img/club_brentford.svg",
+  "브라이튼 FC":      "img/club_brighton.svg",
+  "브라이튼":         "img/club_brighton.svg",
+  "웨스트햄":         "img/club_westham.svg",
+  "맨 레드":          "img/club_manred.svg",
+  "맨체스터 유나이티드": "img/club_manunited.svg",
+  "루턴 타운":        "img/club_luton.svg",
+  "번리":             "img/club_burnley.svg",
+  "셰필드 유나이티드":"img/club_sheffield_utd.svg",
+  "올브스":           "img/club_fulveis.svg",
+  "카디프 시티":      "img/club_cardiff.svg",
+  "리즈":             "img/club_leeds.svg",
+  "브리스틀 시티":    "img/club_bristol.svg",
+  "보스턴 Utd":       "img/club_boston.svg",
+  "렉섬 AFC":         "img/club_wrexham.svg",
+  // 커리어 클럽
+  "SL 벤피카":        "img/club_benfica.svg",
+  "인터 밀란":        "img/club_inter_milan.svg",
+};
+
+function emblem(name, size=24, cls='') {
+  const src = EMBLEM[name];
+  if (!src) {
+    // 완전 미등록: 이니셜 배지
+    return `<span class="emb-fallback" style="width:${size}px;height:${size}px;font-size:${Math.round(size*0.35)}px">${ini(name)}</span>`;
+  }
+  return `<img class="emb ${cls}" src="${src}" width="${size}" height="${size}" alt="${name}" onerror="this.style.display='none'">`;
+}
+
 const ini = n => n.split(' ').map(w=>w[0]).join('').slice(0,3).toUpperCase();
 const isMyTeam = t => t === FM.myTeam;
 const ratingColor = r => !r?'rc6':r>=8.5?'rc9':r>=7.5?'rc8':r>=6.5?'rc7':r>=5.5?'rc6':'rc5';
@@ -328,8 +388,13 @@ function init() {
 // ── SIDEBAR ──────────────────────────────────
 function renderSidebar() {
   document.getElementById('teamHero').innerHTML = `
-    <div class="team-hero-name">${FM.myTeam}</div>
-    <div class="team-hero-sub">${FM.leagueFlag} ${FM.leagueName}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      ${emblem(FM.myTeam, 36, '')}
+      <div>
+        <div class="team-hero-name">${FM.myTeam}</div>
+        <div class="team-hero-sub">${FM.leagueFlag} ${FM.leagueName}</div>
+      </div>
+    </div>
     <div class="team-hero-season">시즌 ${FM.season}</div>`;
   document.getElementById('sbMenu').innerHTML = `
     <div style="padding:6px 10px;font-size:12px;color:var(--t2)">순위표 · 경기 · 스쿼드</div>`;
@@ -338,7 +403,7 @@ function renderSidebar() {
 // ── PAGE HEADER ──────────────────────────────
 function renderPageHeader() {
   document.getElementById('pgHead').innerHTML = `
-    <div class="pg-flag">${FM.leagueFlag}</div>
+    <img src="img/league_epl.png" style="height:44px;object-fit:contain;filter:brightness(0) invert(1)">
     <div>
       <div class="pg-name">${FM.leagueName}</div>
       <div class="pg-meta">2074/75 시즌 최종 순위 · ${FM.myTeam} 우승 🏆</div>
@@ -379,7 +444,7 @@ function renderStandings() {
             return `<tr class="${pc}${my?' my-row':''}">
               <td><div class="pos-cell"><div class="pos-bar"></div>${r.pos}</div></td>
               <td><div class="team-cell">
-                <div class="t-badge${my?' my-badge':''}">${ini(r.team)}</div>
+                ${emblem(r.team, 22, my?'my-badge':'')}
                 <span class="t-name${my?' my-name':''}">${r.team}</span>
               </div></td>
               <td class="num hide-m">${r.played}</td>
@@ -430,12 +495,12 @@ function renderMatchCard(m) {
   const detailBtn=myMatch&&ft?`<div class="detail-arrow">매치센터 →</div>`:'';
   return `<div class="mc ${ft?'ft':'ns'}${myMatch?' my-mc':''}" onclick="openMatchCenter('${m.id}')">
     <div class="m-team home">
-      <div class="m-badge ${hCls}">${ini(m.home)}</div>
+      ${emblem(m.home, 28, hCls?'emb-my':'')}
       <div><div class="m-tname ${hCls}">${m.home}</div>${ft&&hGoals.length?`<div class="m-scorers">${hGoals.join(', ')}</div>`:''}</div>
     </div>
     <div class="m-sc-wrap">${scoreHtml}${detailBtn}</div>
     <div class="m-team away">
-      <div class="m-badge ${aCls}">${ini(m.away)}</div>
+      ${emblem(m.away, 28, aCls?'emb-my':'')}
       <div><div class="m-tname ${aCls}">${m.away}</div>${ft&&aGoals.length?`<div class="m-scorers">${aGoals.join(', ')}</div>`:''}</div>
     </div>
   </div>`;
@@ -454,9 +519,15 @@ function openMatchCenter(id) {
   let html=`
     <button class="mc-close" onclick="closeMC()">✕</button>
     <div class="mc-score-hd">
-      <div class="mc-team-hd"><div class="mc-team-name ${isMyTeam(m.home)?'my':''}">${m.home}</div></div>
+      <div class="mc-team-hd">
+        ${emblem(m.home, 40, '')}
+        <div class="mc-team-name ${isMyTeam(m.home)?'my':''}" style="margin-top:6px">${m.home}</div>
+      </div>
       ${scoreDisplay}
-      <div class="mc-team-hd"><div class="mc-team-name ${isMyTeam(m.away)?'my':''}">${m.away}</div></div>
+      <div class="mc-team-hd">
+        ${emblem(m.away, 40, '')}
+        <div class="mc-team-name ${isMyTeam(m.away)?'my':''}" style="margin-top:6px">${m.away}</div>
+      </div>
     </div>
     <div class="mc-meta">${m.stadium}${m.attendance?` · ${m.attendance.toLocaleString()}명`:''}${ft?' · 경기 종료':''}</div>`;
   if(tabs.length) {
@@ -683,6 +754,7 @@ function openPlayerDetail(id) {
           const period    = c.from + ' ~ ' + (c.to || '현재');
           return `<div class="career-item${isCurrent?' current':''}${isLoan?' loan-item':''}">
             <div class="career-dot"></div>
+            ${emblem(c.club, 28, 'career-emb')}
             <div class="career-info">
               <div class="career-club">${c.club}${isLoan?`<span class="loan-tag">임대</span>`:''}</div>
               <div class="career-period">${period}</div>
